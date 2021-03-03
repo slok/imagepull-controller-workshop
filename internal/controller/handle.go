@@ -24,7 +24,7 @@ type HandlerKubernetesRepository interface {
 type HandlerConfig struct {
 	RunningNamespace      string
 	ImagePullSecretName   string
-	SAImagePullSecretName string
+	SaImagePullSecretName string
 	K8sRepo               HandlerKubernetesRepository
 	Logger                log.Logger
 }
@@ -38,8 +38,8 @@ func (c *HandlerConfig) defaults() error {
 		c.ImagePullSecretName = "image-pull-credentials"
 	}
 
-	if c.SAImagePullSecretName == "" {
-		c.SAImagePullSecretName = c.ImagePullSecretName
+	if c.SaImagePullSecretName == "" {
+		c.SaImagePullSecretName = c.ImagePullSecretName
 	}
 
 	if c.K8sRepo == nil {
@@ -71,7 +71,7 @@ func NewHandler(config HandlerConfig) (controller.Handler, error) {
 	return handler{
 		runningNamespace:      config.RunningNamespace,
 		imagePullSecretName:   config.ImagePullSecretName,
-		saImagePullSecretName: config.SAImagePullSecretName,
+		saImagePullSecretName: config.SaImagePullSecretName,
 		k8sRepo:               config.K8sRepo,
 		logger:                config.Logger,
 	}, nil

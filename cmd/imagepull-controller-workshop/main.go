@@ -83,10 +83,11 @@ func Run(ctx context.Context, stdin io.Writer, stdout, stderr io.Reader) error {
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
 		handler, err := controller.NewHandler(controller.HandlerConfig{
-			RunningNamespace:    cmdCfg.NamespaceRunning,
-			ImagePullSecretName: cmdCfg.SecretName,
-			K8sRepo:             k8sRepo,
-			Logger:              logger,
+			RunningNamespace:      cmdCfg.NamespaceRunning,
+			ImagePullSecretName:   cmdCfg.SecretName,
+			SaImagePullSecretName: cmdCfg.SaSecretName,
+			K8sRepo:               k8sRepo,
+			Logger:                logger,
 		})
 		if err != nil {
 			return fmt.Errorf("could not create controller handler: %w", err)
