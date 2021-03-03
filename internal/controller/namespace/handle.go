@@ -1,4 +1,4 @@
-package controller
+package namespace
 
 import (
 	"context"
@@ -12,8 +12,8 @@ import (
 	"github.com/slok/imagepull-controller-workshop/internal/log"
 )
 
-// HandlerKubernetesRepository is the service to manage k8s resources by the Kubernetes controller handler.
-type HandlerKubernetesRepository interface {
+// HandlerRepository is the service to manage k8s resources by the Kubernetes controller handler.
+type HandlerRepository interface {
 	GetSecret(ctx context.Context, ns string, name string) (*corev1.Secret, error)
 	EnsureSecret(ctx context.Context, secret *corev1.Secret) error
 	GetServiceAccount(ctx context.Context, ns string, name string) (*corev1.ServiceAccount, error)
@@ -25,7 +25,7 @@ type HandlerConfig struct {
 	RunningNamespace      string
 	ImagePullSecretName   string
 	SaImagePullSecretName string
-	K8sRepo               HandlerKubernetesRepository
+	K8sRepo               HandlerRepository
 	Logger                log.Logger
 }
 
@@ -49,6 +49,7 @@ func (c *HandlerConfig) defaults() error {
 	if c.Logger == nil {
 		c.Logger = log.Noop
 	}
+	c.Logger = c.Logger.WithValues(log.Kv{"svc": "controller.namespace.Handler"})
 
 	return nil
 }
@@ -57,7 +58,7 @@ type handler struct {
 	runningNamespace      string
 	imagePullSecretName   string
 	saImagePullSecretName string
-	k8sRepo               HandlerKubernetesRepository
+	k8sRepo               HandlerRepository
 	logger                log.Logger
 }
 
@@ -83,6 +84,7 @@ func (h handler) Handle(ctx context.Context, obj runtime.Object) error {
 		h.logger.Warningf("controller received object that is not a namespace")
 		return nil
 	}
+	logger := h.logger.WithValues(log.Kv{"k8s-name": ns.Name})
 
 	// If is our same namespace, ignore handling.
 	if ns.Name == h.runningNamespace {
@@ -92,7 +94,7 @@ func (h handler) Handle(ctx context.Context, obj runtime.Object) error {
 	// Make a copy just in case of global mutation.
 	ns = ns.DeepCopy()
 
-	h.logger.Infof("Handling ns %q", ns.Name)
+	logger.Infof("Handling namespace")
 
 	// Get secret from running namespace with docker registry credentials.
 	secret, err := h.k8sRepo.GetSecret(ctx, h.runningNamespace, h.imagePullSecretName)
