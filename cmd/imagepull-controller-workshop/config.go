@@ -18,6 +18,7 @@ type CmdConfig struct {
 	NamespaceRunning string
 	ResyncInterval   time.Duration
 	SecretName       string
+	SaSecretName     string
 }
 
 // NewCmdConfig returns a new command configuration.
@@ -33,7 +34,8 @@ func NewCmdConfig() (*CmdConfig, error) {
 	app.Flag("namespace-running", "kubernetes namespace where the controller is running.").Short('r').Required().StringVar(&c.NamespaceRunning)
 	app.Flag("workers", "concurrent processing workers for each kubernetes controller.").Default("5").Short('w').IntVar(&c.Workers)
 	app.Flag("resync-interval", "the duration between resync the controllers resources.").Default("5m").DurationVar(&c.ResyncInterval)
-	app.Flag("secret-name", "the secret name in the running ns that has the image pull credentials.").Default("image-pull-credentials").StringVar(&c.SecretName)
+	app.Flag("secret-name", "the secret name in the running ns that has the image pull credentials.").Default("image-pull-secret").StringVar(&c.SecretName)
+	app.Flag("sa-secret-name", "the clone secret name taht will reference the default service account.").Default("image-pull-secret").StringVar(&c.SaSecretName)
 
 	_, err := app.Parse(os.Args[1:])
 	if err != nil {
