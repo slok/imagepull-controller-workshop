@@ -42,6 +42,16 @@ func (r Repository) GetSecret(ctx context.Context, ns string, name string) (*cor
 	return r.kcli.CoreV1().Secrets(ns).Get(ctx, name, metav1.GetOptions{})
 }
 
+// ListSecrets lists Kubernetes secrets from Kubernetes API server.
+func (r Repository) ListSecrets(ctx context.Context, ns string, options metav1.ListOptions) (*corev1.SecretList, error) {
+	return r.kcli.CoreV1().Secrets(ns).List(ctx, options)
+}
+
+// WatchSecrets watchs Kubernetes secrets from Kubernetes API server.
+func (r Repository) WatchSecrets(ctx context.Context, ns string, options metav1.ListOptions) (watch.Interface, error) {
+	return r.kcli.CoreV1().Secrets(ns).Watch(ctx, options)
+}
+
 // EnsureSecret will create the secret if is missing and overwrite if already exists.
 func (r Repository) EnsureSecret(ctx context.Context, secret *corev1.Secret) error {
 	storedSecret, err := r.kcli.CoreV1().Secrets(secret.Namespace).Get(ctx, secret.Name, metav1.GetOptions{})

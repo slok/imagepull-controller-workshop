@@ -1,4 +1,4 @@
-package controller
+package namespace
 
 import (
 	"context"
@@ -9,18 +9,16 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/tools/cache"
-
-	"github.com/slok/imagepull-controller-workshop/internal/log"
 )
 
-// RetrieverKubernetesRepository is the service to manage k8s resources by the Kubernetes retrievers.
-type RetrieverKubernetesRepository interface {
+// RetrieverRepository is the service to manage k8s resources by the Kubernetes retrievers.
+type RetrieverRepository interface {
 	ListNamespaces(ctx context.Context, labelSelector map[string]string) (*corev1.NamespaceList, error)
 	WatchNamespaces(ctx context.Context, labelSelector map[string]string) (watch.Interface, error)
 }
 
 // NewRetriever returns the retriever for the controller.
-func NewRetriever(k8sRepo RetrieverKubernetesRepository, logger log.Logger) (controller.Retriever, error) {
+func NewRetriever(k8sRepo RetrieverRepository) (controller.Retriever, error) {
 	return controller.RetrieverFromListerWatcher(&cache.ListWatch{
 		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
 			return k8sRepo.ListNamespaces(context.Background(), map[string]string{})
