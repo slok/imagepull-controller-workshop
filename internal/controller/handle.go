@@ -6,7 +6,6 @@ import (
 
 	"github.com/spotahome/kooper/v2/controller"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/slok/imagepull-controller-workshop/internal/log"
@@ -94,60 +93,20 @@ func (h handler) Handle(ctx context.Context, obj runtime.Object) error {
 
 	h.logger.Infof("Handling ns %q", ns.Name)
 
-	// Get secret from running namespace with docker registry credentials.
-	secret, err := h.k8sRepo.GetSecret(ctx, h.runningNamespace, h.imagePullSecretName)
-	if err != nil {
-		return fmt.Errorf("could not retrieve docker registry credentials secret: %w", err)
-	}
+	// TODO: Get secret from running namespace with docker registry credentials.
 
-	// Ensure secret on expected namespace.
-	annotations := map[string]string{}
-	for k, v := range secret.Annotations {
-		annotations[k] = v
-	}
-	annotations["app.kubernetes.io/managed-by"] = "imagepull-controller-workshop"
+	// TODO: Ensure secret on expected namespace.
 
-	newNsSecret := &corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        h.saImagePullSecretName,
-			Namespace:   ns.Name,
-			Labels:      secret.Labels,
-			Annotations: annotations,
-		},
-		Data: secret.Data,
-		Type: secret.Type,
-	}
-
-	err = h.k8sRepo.EnsureSecret(ctx, newNsSecret)
-	if err != nil {
-		return fmt.Errorf("could not ensure docker registry credentials secret on namespace: %w", err)
-	}
-
-	// Patch `default` service account on expected namespace.
-	sa, err := h.k8sRepo.GetServiceAccount(ctx, ns.Name, "default")
-	if err != nil {
-		return fmt.Errorf("could not retrieve default service account from namespace: %w", err)
-	}
-	if containsLocalObjectRef(sa.ImagePullSecrets, h.saImagePullSecretName) {
-		// Already set, move along.
-		h.logger.Debugf("'default' service account image pull secet already set")
-		return nil
-	}
-
-	sa.ImagePullSecrets = append(sa.ImagePullSecrets, corev1.LocalObjectReference{Name: h.saImagePullSecretName})
-	err = h.k8sRepo.EnsureServiceAccount(ctx, sa)
-	if err != nil {
-		return fmt.Errorf("could not ensure default service account: %w", err)
-	}
+	// TODO: Patch `default` service account on expected namespace.
 
 	return nil
 }
 
-func containsLocalObjectRef(refs []corev1.LocalObjectReference, name string) bool {
-	for _, ref := range refs {
-		if ref.Name == name {
-			return true
-		}
-	}
-	return false
-}
+// func containsLocalObjectRef(refs []corev1.LocalObjectReference, name string) bool {
+// 	for _, ref := range refs {
+// 		if ref.Name == name {
+// 			return true
+// 		}
+// 	}
+// 	return false
+// }
